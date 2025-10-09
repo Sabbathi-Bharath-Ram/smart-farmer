@@ -19,7 +19,7 @@ The project is built using **Spring Boot** (backend) and **HTML, CSS** (frontend
 | Layer | Technology |
 |--------|-------------|
 | Backend | Spring Boot |
-| Database | H2 Database (In-memory) |
+| Database | MySQL |
 | Frontend | HTML, CSS |
 | Tools | VS Code, Maven, Git, GitHub |
 
