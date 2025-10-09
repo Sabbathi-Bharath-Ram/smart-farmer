@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Smart Farmer - Harvests</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-primary" href="dashboard.html">Smart Farmer</a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navHarvests"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navHarvests">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="fields.html">Fields</a></li>
+        <li class="nav-item"><a class="nav-link" href="crops.html">Crops</a></li>
+        <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+        <li class="nav-item"><a class="nav-link active" href="harvests.html">Harvests</a></li>
+      </ul>
+      <button id="logoutBtn" class="btn btn-outline-danger ms-3">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<main class="container my-4">
+  <div class="row g-4">
+    <!-- Form -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm p-4">
+        <h5 class="fw-semibold mb-3">Record Harvest</h5>
+        <form id="harvestForm">
+          <div class="mb-3"><label class="form-label">Crop</label><input id="h_crop" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Harvest Date</label><input id="h_date" type="date" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Actual Yield (kg)</label><input id="h_qty" type="number" step="0.01" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Price per Unit (₹)</label><input id="h_price" type="number" step="0.01" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Buyer</label><input id="h_buyer" class="form-control"></div>
+          <button type="submit" class="btn btn-primary w-100">Save Harvest</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm p-4">
+        <h5 class="fw-semibold mb-3">Harvest History</h5>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-light"><tr><th>Date</th><th>Crop</th><th>Qty</th><th>Price</th><th>Action</th></tr></thead>
+            <tbody id="harvestsBody"><tr><td colspan="5" class="text-muted">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function authOrRedirect(){const u=sessionStorage.getItem('sf_user');if(!u){location.href='login.html';return null;}return JSON.parse(u);}
+authOrRedirect();
+logoutBtn.onclick=()=>{sessionStorage.removeItem('sf_user');location.href='login.html';};
+
+async function loadHarvests(){
+  const list=await fetch('/api/harvests').then(r=>r.json());
+  harvestsBody.innerHTML=list.length?list.map(h=>`
+    <tr>
+      <td>${h.harvestDate||''}</td>
+      <td>${h.crop||''}</td>
+      <td>${h.actualYield||''}</td>
+      <td>₹ ${h.pricePerUnit||''}</td>
+      <td><button class="btn btn-sm btn-outline-danger" onclick="del(${h.id})">Delete</button></td>
+    </tr>`).join(''):'<tr><td colspan="5" class="text-muted">No harvests yet</td></tr>';
+}
+async function del(id){if(!confirm('Delete?'))return;await fetch('/api/harvests/'+id,{method:'DELETE'});loadHarvests();}
+harvestForm.onsubmit=async e=>{
+  e.preventDefault();
+  const p={crop:h_crop.value,harvestDate:h_date.value,actualYield:parseFloat(h_qty.value||0),pricePerUnit:parseFloat(h_price.value||0),buyer:h_buyer.value};
+  await fetch('/api/harvests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+  e.target.reset();loadHarvests();
+}
+loadHarvests();
+</script>
+</body>
+</html>

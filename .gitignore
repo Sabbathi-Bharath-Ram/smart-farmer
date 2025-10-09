@@ -1,0 +1,17 @@
+# Build / IDE files
+/target/
+.idea/
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+/build/
+/out/
+
+# Logs & OS files
+*.log
+.DS_Store
+
+# Spring Boot
+/logs/
